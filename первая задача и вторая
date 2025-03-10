@@ -1,85 +1,35 @@
 import sys
-import requests
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLineEdit, QPushButton, QLabel
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtCore import Qt
+import pygame
+from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtCore import QUrl
 
-class MapApp(QWidget):
+
+class Browser(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.initUI()
+        self.browser = QWebEngineView()
+        self.browser.setUrl(QUrl("https://yandex.ru/maps/?ll=48.191818%2C54.426554&z=8.58"))
+        self.setCentralWidget(self.browser)
+        self.showMaximized()
 
-    def initUI(self):
-        # Настройка окна
-        self.setWindowTitle("Yandex Maps API")
-        self.setGeometry(100, 100, 800, 600)
 
-        # Создание layout
-        layout = QVBoxLayout()
+def main():
+    pygame.init()
 
-        # Поле для ввода широты
-        self.lat_input = QLineEdit(self)
-        self.lat_input.setPlaceholderText("Введите широту")
-        layout.addWidget(QLabel("Широта:"))
-        layout.addWidget(self.lat_input)
+    app = QApplication(sys.argv)
+    window = Browser()
+    screen = pygame.display.set_mode((800, 600))
 
-        # Поле для ввода долготы
-        self.lon_input = QLineEdit(self)
-        self.lon_input.setPlaceholderText("Введите долготу")
-        layout.addWidget(QLabel("Долгота:"))
-        layout.addWidget(self.lon_input)
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        pygame.display.flip()
+    pygame.quit()
+    sys.exit()
 
-        # Поле для ввода масштаба
-        self.zoom_input = QLineEdit(self)
-        self.zoom_input.setPlaceholderText("Введите масштаб (0-17)")
-        layout.addWidget(QLabel("Масштаб:"))
-        layout.addWidget(self.zoom_input)
-
-        # Кнопка для обновления карты
-        self.show_map_button = QPushButton("Показать карту", self)
-        self.show_map_button.clicked.connect(self.show_map)
-        layout.addWidget(self.show_map_button)
-
-        # Метка для отображения карты
-        self.map_label = QLabel(self)
-        self.map_label.setAlignment(Qt.AlignCenter)
-        layout.addWidget(self.map_label)
-
-        # Установка layout
-        self.setLayout(layout)
-
-    def show_map(self):
-        # Получаем данные из полей ввода
-        try:
-            lat = float(self.lat_input.text())
-            lon = float(self.lon_input.text())
-            zoom = int(self.zoom_input.text())
-        except ValueError:
-            self.map_label.setText("Ошибка: введите корректные значения")
-            return
-
-        # Проверка диапазона масштаба
-        if zoom < 0 or zoom > 17:
-            self.map_label.setText("Ошибка: масштаб должен быть от 0 до 17")
-            return
-
-        # Формируем URL для запроса к Yandex Maps API
-        api_key = "ваш_api_ключ"  # Замените на ваш API-ключ
-        url = f"https://static-maps.yandex.ru/1.x/?ll={lon},{lat}&z={zoom}&size=600,450&l=map&apikey={api_key}"
-
-        # Загружаем изображение карты
-        response = requests.get(url)
-        if response.status_code == 200:
-            with open("map.png", "wb") as f:
-                f.write(response.content)
-            # Отображаем карту в QLabel
-            pixmap = QPixmap("map.png")
-            self.map_label.setPixmap(pixmap)
-        else:
-            self.map_label.setText("Ошибка при загрузке карты")
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = MapApp()
-    window.show()
-    sys.exit(app.exec_())
+    main()
