@@ -1,0 +1,41 @@
+import pygame
+import sys
+
+pygame.init()
+
+width, height = 800, 600
+screen = pygame.display.set_mode((width, height))
+pygame.display.set_caption("Простая карта")
+
+WHITE = (255, 255, 255)
+BLUE = (0, 0, 255)
+GREEN = (0, 255, 0)
+
+city1_pos = (100, 100)
+city2_pos = (300, 200)
+
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT]:
+        city1_pos = (city1_pos[0] - 5, city1_pos[1])
+    if keys[pygame.K_RIGHT]:
+        city1_pos = (city1_pos[0] + 5, city1_pos[1])
+    if keys[pygame.K_UP]:
+        city1_pos = (city1_pos[0], city1_pos[1] - 5)
+    if keys[pygame.K_DOWN]:
+        city1_pos = (city1_pos[0], city1_pos[1] + 5)
+
+    screen.fill(WHITE)
+
+    pygame.draw.rect(screen, BLUE, (*city1_pos, 50, 50))  
+    pygame.draw.rect(screen, GREEN, city2_pos + (50, 50))  
+
+    pygame.display.flip()
+
+pygame.quit()
+sys.exit()
