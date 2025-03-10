@@ -1,55 +1,38 @@
-import sys
-from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtWidgets import QLabel, QVBoxLayout, QWidget
-import requests
-from io import BytesIO
-from PIL import Image
+import tkinter as tk
+from tkinter import ttk
+import folium
+import webbrowser
+import os
 
-class MapViewer(QWidget):
-    def __init__(self, latitude, longitude, scale):
-        super().__init__()
-        self.latitude = latitude
-        self.longitude = longitude
-        self.scale = scale
-        self.initUI()
+def show_map():
+    lat = float(lat_entry.get())
+    lon = float(lon_entry.get())
+    zoom = int(zoom_entry.get())
 
-    def initUI(self):
-        self.setWindowTitle('Map Viewer')
-        layout = QVBoxLayout()
+    m = folium.Map(location=[lat, lon], zoom_start=zoom)
 
-        self.map_label = QLabel(self)
-        layout.addWidget(self.map_label)
+    map_file = "map.html"
+    m.save(map_file)
 
-        self.setLayout(layout)
-        self.show_map()
+    webbrowser.open(f"file://{os.path.abspath(map_file)}")
 
-    def show_map(self):
-        map_params = {
-            "ll": f"{self.longitude},{self.latitude}",
-            "spn": f"{self.scale},{self.scale}",
-            "l": "map"
-        }
+root = tk.Tk()
+root.title("Карта по координатам")
 
-        map_api_server = "https://static-maps.yandex.ru/v1"
-        response = requests.get(map_api_server, params=map_params)
+ttk.Label(root, text="Широта:").grid(row=0, column=0, padx=10, pady=10)
+lat_entry = ttk.Entry(root)
+lat_entry.grid(row=0, column=1, padx=10, pady=10)
+lat_entry.insert(0, "55.7558")  
+ttk.Label(root, text="Долгота:").grid(row=1, column=0, padx=10, pady=10)
+lon_entry = ttk.Entry(root)
+lon_entry.grid(row=1, column=1, padx=10, pady=10)
+lon_entry.insert(0, "37.6173")  
 
-        if response.status_code == 200:
-            try:
-                im = Image.open(BytesIO(response.content))
-                im.save("map.png")
-                pixmap = QtGui.QPixmap("map.png")
-                self.map_label.setPixmap(pixmap)
-            except Exception as e:
-                print("Ошибка при открытии изображения:", e)
-        else:
-            print("Ошибка при получении карты:", response.status_code)
-            print("Содержимое ответа:", response.text)
+ttk.Label(root, text="Масштаб:").grid(row=2, column=0, padx=10, pady=10)
+zoom_entry = ttk.Entry(root)
+zoom_entry.grid(row=2, column=1, padx=10, pady=10)
+zoom_entry.insert(0, "10") 
 
-if __name__ == '__main__':
-    app = QtWidgets.QApplication(sys.argv)
-    latitude = 55.7558 #тип корды Москвы 
-    longitude = 37.6173  
-    scale = 0.01 
-    viewer = MapViewer(latitude, longitude, scale)
-    viewer.resize(800, 600)
-    sys.exit(app.exec_())
+ttk.Button(root, text="Показать карту", command=show_map).grid(row=3, column=0, columnspan=2, pady=10)
+
+root.mainloop()
